@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Data directories - exclude actual data but keep structure
+data/labels/crops/*
+data/labels/masks/*
+data/labels/records.jsonl
+data/datasets/*
+data/models/*
+!data/labels/crops/.gitkeep
+!data/labels/masks/.gitkeep
+!data/datasets/.gitkeep
+!data/models/.gitkeep
+
+# Raw images directory - exclude all images
+raw_pictures/*
+!raw_pictures/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model files (exclude trained models but keep SAM model)
+models/**/*.pt
+models/**/*.pth
+*.onnx
+*.engine
+# Keep SAM model in root
+!sam2_b.pt
+
+# Gradio
+flagged/
+
+# Temporary files
+*.tmp
+*.bak

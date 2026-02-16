@@ -1,0 +1,50 @@
+packaging_classes:
+  - can
+  - bottle_plastic
+  - bottle_glass
+  - bag
+  - box
+  - pouch
+  - jar_tub
+  - tray_hardpack
+  - other
+
+thresholds:
+  router_min_conf: 0.60
+  product_min_conf: 0.55
+  final_min_conf: 0.50
+  try_top2_router: true
+
+paths:
+  raw_dir: raw_pictures
+  records_path: data/labels/records.jsonl
+  masks_dir: data/labels/masks
+  crops_dir: data/labels/crops
+  datasets_dir: data/datasets
+  packaging_dataset: data/datasets/packaging_cls
+  products_dataset: data/datasets/products_cls
+  products_dataset_by_pack: data/datasets/products_cls_by_pack
+  models_dir: models
+  packaging_model_out: models/packaging_router
+  product_models_out: models/product_models
+  product_to_ean: data/mappings/product_to_ean.csv
+
+sam:
+  model: sam2_b.pt
+
+training:
+  packaging:
+    base_model: yolo26s-cls.pt
+    imgsz: 320
+    epochs: 50
+    batch: 128
+
+  products:
+    base_model: yolo26m-cls.pt
+    imgsz: 384
+    epochs: 80
+    batch: 96
+
+ui:
+  crop_padding_ratio: 0.08
+  output_crop_max_side: 1024
