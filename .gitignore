@@ -59,13 +59,13 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Model files (exclude trained models but keep SAM model)
-models/**/*.pt
-models/**/*.pth
+# Model files (exclude all .pt files - too large for GitHub)
+*.pt
+*.pth
 *.onnx
 *.engine
-# Keep SAM model in root
-!sam2_b.pt
+models/**/*.pt
+models/**/*.pth
 
 # Gradio
 flagged/

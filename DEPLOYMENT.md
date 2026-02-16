@@ -50,7 +50,7 @@ ean_system/
 - ✅ Setup scripts (`setup.ps1`, `setup.sh`)
 - ✅ Documentation (`README.md`, `CHANGELOG.md`, `DEPLOYMENT.md`)
 - ✅ Dependencies list (`requirements.txt`)
-- ✅ SAM model weights (`sam2_b.pt`)
+- ⚠️ SAM model weights (`sam2_b.pt`) - **Provide download link instead** (too large for Git)
 
 **Exclude**:
 - ❌ `.venv/` (recipient creates their own)
@@ -106,7 +106,20 @@ Expand-Archive ean_system.zip -DestinationPath C:\Projects\
 unzip ean_system.zip -d ~/projects/
 ```
 
-### Step 2: Run Setup Script
+### Step 2: Download SAM Model
+**Required**: Download SAM 2 Base model (161 MB)
+
+```powershell
+# Download from official source
+# Place in root directory as: sam2_b.pt
+```
+
+**Download link**: https://github.com/facebookresearch/segment-anything-2
+Or use direct link: https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_base_plus.pt
+
+Rename downloaded file to `sam2_b.pt` and place in project root.
+
+### Step 3: Run Setup Script
 ```powershell
 # Windows
 cd ean_system
