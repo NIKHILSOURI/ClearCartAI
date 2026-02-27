@@ -28,14 +28,13 @@ from PIL import Image
 import gradio as gr
 
 # Add project root to path
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-import db
-from pipeline import ProductSegmentationPipeline
-from sam2_segmenter import SAM2InteractiveSegmenter
-from image_utils import load_image, apply_mask_overlay
-import config
+from ean_system import db, config
+from ean_system.pipeline import ProductSegmentationPipeline
+from ean_system.sam2_segmenter import SAM2InteractiveSegmenter
+from ean_system.image_utils import load_image, apply_mask_overlay
 
 # Configuration from environment
 RAW_ROOT_DIR = os.getenv('RAW_ROOT_DIR', '/data/raw_products')
@@ -550,9 +549,62 @@ def build_ui():
 
 
 if __name__ == '__main__':
-    demo = build_ui()
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False
+    import argparse
+    parser = argparse.ArgumentParser(description='Gradio Labeling UI')
+    parser.add_argument(
+        '--public',
+        action='store_true',
+        help='Get a public URL via ngrok (use if Gradio share link fails due to firewall/antivirus)',
     )
+    args = parser.parse_args()
+
+    demo = build_ui()
+
+    if args.public:
+        import threading
+        import time
+        from pyngrok import ngrok
+
+        def run_app():
+            demo.launch(
+                server_name="0.0.0.0",
+                server_port=7860,
+                share=False,
+            )
+
+        thread = threading.Thread(target=run_app, daemon=True)
+        thread.start()
+
+        # Wait for server to be ready
+        import socket
+        for _ in range(30):
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(1)
+                s.connect(("127.0.0.1", 7860))
+                s.close()
+                break
+            except (socket.error, OSError):
+                time.sleep(1)
+        else:
+            print("Server failed to start on port 7860.")
+            sys.exit(1)
+
+        try:
+            public_url = ngrok.connect(7860, "http")
+            print("\n" + "=" * 60)
+            print("PUBLIC URL (share with anyone):", public_url)
+            print("=" * 60 + "\n")
+        except Exception as e:
+            print("ngrok failed:", e)
+            print("Install/configure ngrok: pip install pyngrok")
+            print("Or sign up at https://ngrok.com and add your auth token.")
+            sys.exit(1)
+
+        thread.join()
+    else:
+        demo.launch(
+            server_name="0.0.0.0",
+            server_port=7860,
+            share=True,
+        )
