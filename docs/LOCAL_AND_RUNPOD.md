@@ -63,11 +63,12 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 3. Install PyTorch with CUDA (use cu118 or cu121 to match your CUDA version)
-pip uninstall -y torch torchvision torchaudio 2>nul
+# Windows: 2>nul  |  Linux/macOS: 2>/dev/null
+pip uninstall -y torch torchvision torchaudio 2>/dev/null || true
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-# 4. Install SAM2 from source
-pip install git+https://github.com/facebookresearch/sam2.git
+# 4. Install SAM2 from source (--no-build-isolation uses your PyTorch; avoids re-downloading torch and disk space issues)
+pip install --no-build-isolation "git+https://github.com/facebookresearch/sam2.git"
 ```
 
 **Verify CUDA:**
@@ -287,6 +288,33 @@ Run the Gradio labeling UI on a **RunPod GPU pod** with hourly billing. Same app
 3. Select a GPU with **≥ 16 GB VRAM**.  
 4. Set **vCPU**: 4+, **RAM**: 16–32 GB, **Disk**: 50+ GB.  
 5. Mount a **persistent volume** (e.g. at `/data`) for raw images and labels.
+
+### 3.3a One-shot setup script (recommended for beginners)
+
+After the pod is running, clone the repo and run a **single script** to install dependencies, configure the database (SQLite inside the repo on `/workspace`), and start the Gradio UI. If something is already installed, that step is skipped.
+
+```bash
+cd /workspace
+git clone https://github.com/NIKHILSOURI/ClearCartAI.git
+cd ClearCartAI
+bash setup_and_run_pod.sh
+```
+
+The script will:
+
+1. Check persistence (writes a test file under `/workspace`).
+2. Clone the repo if it isn’t there (no-op if you already cloned).
+3. Create and activate a venv if missing.
+4. Install dependencies (requirements, PyTorch cu121, SAM2); **skips** if already installed.
+5. Create `data/db/`, `data/raw/`, `outputs/` and set:
+   - `DATABASE_URL=sqlite:////workspace/ClearCartAI/data/db/labeling.db`
+   - `RAW_ROOT_DIR=/workspace/ClearCartAI/data/raw`
+   - `OUTPUT_ROOT_DIR=/workspace/ClearCartAI/outputs`
+   - Optional: `PS_DEVICE=cuda`, `PS_DTYPE=bfloat16`
+6. Print a short sanity check (env vars, CUDA).
+7. Start the Gradio UI on **0.0.0.0:7860** (reachable via RunPod’s HTTP port mapping).
+
+Each time you create a new pod, run the same two commands (clone + `bash setup_and_run_pod.sh`). Everything persists under `/workspace` if that is your persistent volume. To only install and configure without starting the UI, run `bash setup_and_run_pod.sh --install-only`.
 
 ## 3.4 Directory layout in the pod
 
