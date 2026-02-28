@@ -361,15 +361,16 @@ PS_SIMILARITY_THRESHOLD=0.7
 ## 3.6 Install dependencies in the pod
 
 ```bash
-cd /workspace/Ean-System/ean_system_new
+cd /workspace/ClearCartAI   # or your repo path
 
 python -m venv venv
 source venv/bin/activate
 
-pip install -r requirements.txt
+pip install wheel setuptools>=61.0
 pip uninstall -y torch torchvision torchaudio 2>/dev/null || true
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-pip install git+https://github.com/facebookresearch/sam2.git
+pip install -r requirements.txt
+pip install --no-build-isolation "git+https://github.com/facebookresearch/sam2.git"
 ```
 
 First run will download SAM2 and DINOv2 (~10 GB). Optional pre-warm:
@@ -381,7 +382,7 @@ python tests/test_setup.py
 ## 3.7 Start the Gradio UI on RunPod
 
 ```bash
-cd /workspace/Ean-System/ean_system_new
+cd /workspace/ClearCartAI
 source venv/bin/activate
 python tools/label_ui_gradio.py
 ```

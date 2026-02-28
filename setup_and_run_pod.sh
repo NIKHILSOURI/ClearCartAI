@@ -50,7 +50,7 @@ if [ ! -d "venv" ]; then
   python3 -m venv venv
 fi
 # Remove broken pip metadata so "Ignoring invalid distribution ~ip" goes away
-rm -rf venv/lib/python3.11/site-packages/'~ip' venv/lib/python3.11/site-packages/'~ip.dist-info' 2>/dev/null || true
+rm -rf venv/lib/python3.11/site-packages/'~ip'* 2>/dev/null || true
 echo "  Activating venv..."
 # shellcheck source=/dev/null
 source venv/bin/activate
@@ -64,17 +64,28 @@ echo "  -> venv: $PY"
 # --- 4) Dependencies (skip if already satisfied)
 echo ""
 echo "[4/7] Installing dependencies (skipping if already installed)..."
-if ! "$PY" -c "import torch" 2>/dev/null; then
-  echo "  Installing PyTorch (CUDA 12.1) first, then rest of requirements..."
+# Build tools required for SAM2 (bdist_wheel)
+"${PIP[@]}" install -q wheel setuptools>=61.0
+
+# PyTorch CUDA 12.1: install or reinstall if broken (e.g. missing cpp_extension / libs)
+TORCH_OK=0
+if "$PY" -c "import torch; import torch.utils.cpp_extension" 2>/dev/null; then
+  TORCH_OK=1
+fi
+if [ "$TORCH_OK" -eq 0 ]; then
+  echo "  Installing PyTorch (CUDA 12.1) and requirements..."
   "${PIP[@]}" uninstall -y torch torchvision torchaudio 2>/dev/null || true
   "${PIP[@]}" install torch torchvision --index-url https://download.pytorch.org/whl/cu121
   "${PIP[@]}" install -r requirements.txt
 else
-  echo "  Torch already in venv; ensuring other requirements..."
+  echo "  Torch OK; ensuring other requirements..."
   "${PIP[@]}" install -q -r requirements.txt
 fi
+
+# SAM2 from source (needs torch + wheel; --no-build-isolation uses venv torch)
 if ! "$PY" -c "import sam2" 2>/dev/null; then
   echo "  Installing SAM2 from source..."
+  export SAM2_BUILD_ALLOW_ERRORS=1
   "${PIP[@]}" install --no-build-isolation "git+https://github.com/facebookresearch/sam2.git"
 fi
 echo "  -> Dependencies OK."

@@ -169,15 +169,16 @@ cd /workspace/CLEARCART/Ean-System/ean_system_new
 python -m venv venv
 source venv/bin/activate  # Windows pods: venv\Scripts\activate
 
-# 1. Core Python dependencies
-pip install -r requirements.txt
-
-# 2. Install CUDA-enabled PyTorch (adjust cu121 to pod image CUDA version if needed)
-pip uninstall -y torch torchvision torchaudio || true
+# 1. Build tools and CUDA-enabled PyTorch first
+pip install wheel setuptools>=61.0
+pip uninstall -y torch torchvision torchaudio 2>/dev/null || true
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-# 3. Install SAM2 from source (used by ModelLoader and sam2_segmenter)
-pip install git+https://github.com/facebookresearch/sam2.git
+# 2. Rest of dependencies
+pip install -r requirements.txt
+
+# 3. SAM2 from source (--no-build-isolation uses your PyTorch; avoids disk/build issues)
+pip install --no-build-isolation "git+https://github.com/facebookresearch/sam2.git"
 ```
 
 On first use, SAM2 and DINOv2 will be downloaded from Hugging Face (about ~10 GB total).
